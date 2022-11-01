@@ -1,13 +1,19 @@
+
+// https://graalvm.github.io/native-build-tools/0.9.4/gradle-plugin.html
+
 plugins {
     id 'groovy'
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
-}
+    //id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'org.graalvm.buildtools.native' version '0.9.4'
 
+}
 
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
+
 }
 
 dependencies {
@@ -24,4 +30,36 @@ jar {
     manifest {
         attributes 'Main-Class': 'bel.Main'
     }
+}
+
+nativeBuild {
+    // Main options
+    imageName = 'bel-main' // The name of the native image, defaults to the project name
+    mainClass = 'bel.Main' // The main class to use, defaults to the application.mainClass
+    //debug = true // Determines if debug info should be generated, defaults to false
+    //verbose = true // Add verbose output, defaults to false
+    fallback = false // Sets the fallback mode of native-image, defaults to false
+    sharedLibrary = false // Determines if image is a shared library, defaults to false if `java-library` plugin isn't included
+
+    //systemProperties = [name1: 'value1', name2: 'value2'] // Sets the system properties to use for the native image builder
+    //configurationFileDirectories.from(file('src/my-config')) // Adds a native image configuration file directory, containing files like reflection configuration
+
+    // Advanced options
+    buildArgs.add('--no-server')
+    //buildArgs.add('--no-fallback ')
+    buildArgs.add('--allow-incomplete-classpath')
+    buildArgs.add('--report-unsupported-elements-at-runtime')
+    //buildArgs.add('--initialize-at-build-time ')
+    buildArgs.add('--initialize-at-run-time=org.codehaus.groovy.control.XStreamUtils,groovy.grape.GrapeIvy')
+    // Passes '-H:Extra' to the native image builder options. This can be used to pass parameters which are not directly supported by this extension
+    jvmArgs.add('-Xms2G') // Passes 'flag' directly to the JVM running the native image builder
+    jvmArgs.add('-Xmx8G') // Passes 'flag' directly to the JVM running the native image builder
+
+    // Runtime options
+    //runtimeArgs.add('--help') // Passes '--help' to built image, during "nativeRun" task
+
+    // Development options
+    agent = true // Enables the reflection agent. Can be also set on command line using '-Pagent'
+
+    //useFatJar = true // Instead of passing each jar individually, builds a fat jar
 }
